@@ -1,4 +1,7 @@
-# bitcoin-core
+# bitcoin-core, zenon branch
+*A simplified js client to support a tipbot in the zenon community discord.
+Original readme for bitcoin-core follows.*
+
 A modern Bitcoin Core REST and RPC client to execute administrative tasks, [multiwallet](https://bitcoincore.org/en/2017/09/01/release-0.15.0/#multiwallet) operations and queries about network and the blockchain.
 
 ## Status

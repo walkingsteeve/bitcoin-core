@@ -1,37 +1,30 @@
 {
-  "name": "bitcoin-core",
+  "name": "zenon",
   "version": "2.2.1",
-  "description": "A modern Bitcoin Core REST and RPC client.",
+  "description": "A Zenon REST and RPC client stripped from bitcoin-core (npm).",
   "keywords": [
-    "bitcoin",
-    "bitcoind",
+    "zenon",
+    "zenond",
     "client",
     "request",
     "rest",
     "rpc"
   ],
-  "homepage": "https://github.com/ruimarinho/bitcoin-core",
-  "bugs": "https://github.com/ruimarinho/bitcoin-core/issues",
+  "homepage": "https://github.com/walkingsteeve/bitcoin-core",
   "license": "MIT",
   "author": {
-    "name": "Rui Marinho",
-    "email": "ruipmarinho@gmail.com"
+    "name": "Rui Marinho and the Zenon community",
+    "email": "walkingsteeve@protonmail.net"
   },
   "main": "dist/src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ruimarinho/bitcoin-core.git"
+    "url": "https://github.com/walkingsteeve/bitcoin-core"
   },
   "scripts": {
-    "changelog": "github_changelog_generator --project bitcoin-core --user ruimarinho --no-issues --header-label='# Changelog' --future-release=$npm_config_future_release && sed -i '' -e :a -e '$d;N;2,4ba' -e 'P;D' CHANGELOG.md",
-    "cover": "nyc --reporter=html --reporter=text npm test",
-    "dependencies": "docker-compose up -d bitcoind bitcoind-ssl bitcoind-username-only",
-    "lint": "eslint src test",
+    "lint": "eslint src",
     "prepublish": "npm run transpile",
-    "test": "NODE_ENV=test mocha $npm_package_options_mocha",
-    "testdocker": "docker-compose run --rm sut",
-    "transpile": "rm -rf dist/* && babel src --out-dir dist/src",
-    "version": "npm run changelog --future-release=$npm_package_version && npm run transpile && git add -A CHANGELOG.md dist"
+    "transpile": "rm -rf dist/* && babel src --out-dir dist/src"
   },
   "dependencies": {
     "@uphold/request-logger": "^2.0.0",

@@ -12,6 +12,8 @@ import methods from './methods';
 import requestLogger from './logging/request-logger';
 import semver from 'semver';
 
+const assert = require('assert').strict;
+
 /**
  * Source arguments to find out if a callback has been passed.
  */
@@ -34,9 +36,9 @@ function source(...args) {
  */
 
 const networks = {
-  mainnet: 8332,
-  regtest: 18332,
-  testnet: 18332
+  mainnet: 35992,
+  regtest: 18332, // kept from bitcoin
+  testnet: 18332  // kept from bitcoin
 };
 
 /**
@@ -48,7 +50,7 @@ class Client {
     agentOptions,
     headers = false,
     host = 'localhost',
-    logger = debugnyan('bitcoin-core'),
+    logger = debugnyan('zenon'),
     network = 'mainnet',
     password,
     port,
@@ -64,7 +66,6 @@ class Client {
 
     this.agentOptions = agentOptions;
     this.auth = (password || username) && { pass: password, user: username };
-    this.hasNamedParametersSupport = false;
     this.headers = headers;
     this.host = host;
     this.password = password;
@@ -78,17 +79,14 @@ class Client {
 
     // Version handling.
     if (version) {
-      // Capture X.Y.Z when X.Y.Z.A is passed to support oddly formatted Bitcoin Core
-      // versions such as 0.15.0.1.
-      const result = /[0-9]+\.[0-9]+\.[0-9]+/.exec(version);
+      // Only interested in major and minor version for zenon
+      const result = /[0-9]+\.[0-9]+/.exec(version);
 
       if (!result) {
         throw new Error(`Invalid Version "${version}"`, { version });
       }
 
       [version] = result;
-
-      this.hasNamedParametersSupport = semver.satisfies(version, '>=0.14.0');
     }
 
     this.version = version;
@@ -122,40 +120,23 @@ class Client {
   command(...args) {
     let body;
     let callback;
-    let multiwallet;
     let [input, ...parameters] = args; // eslint-disable-line prefer-const
     const lastArg = _.last(parameters);
-    const isBatch = Array.isArray(input);
+
+    assert(!Array.isArray(input), "Support for batch commands has been removed");
 
     if (_.isFunction(lastArg)) {
       callback = lastArg;
       parameters = _.dropRight(parameters);
     }
 
-    if (isBatch) {
-      multiwallet = _.some(input, command => {
-        return _.get(this.methods[command.method], 'features.multiwallet.supported', false) === true;
-      });
-
-      body = input.map((method, index) => this.requester.prepare({
-        method: method.method,
-        parameters: method.parameters,
-        suffix: index
-      }));
-    } else {
-      if (this.hasNamedParametersSupport && parameters.length === 1 && _.isPlainObject(parameters[0])) {
-        parameters = parameters[0];
-      }
-
-      multiwallet = _.get(this.methods[input], 'features.multiwallet.supported', false) === true;
-      body = this.requester.prepare({ method: input, parameters });
-    }
+    body = this.requester.prepare({ method: input, parameters });
 
     return Promise.try(() => {
       return this.request.postAsync({
         auth: _.pickBy(this.auth, _.identity),
         body: JSON.stringify(body),
-        uri: `${multiwallet && this.wallet ? `/wallet/${this.wallet}` : '/'}`
+        uri: '/'
       }).bind(this)
         .then(this.parser.rpc);
     }).asCallback(callback);
@@ -294,7 +275,7 @@ _.forOwn(methods, (options, method) => {
 export default Client;
 
 /**
- * Export Client class (CJS) for compatibility with require('bitcoin-core').
+ * Export Client class (CJS) for compatibility with require('zenon').
  */
 
 module.exports = Client;
